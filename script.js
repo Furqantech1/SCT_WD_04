@@ -1,4 +1,3 @@
-// DOM Elements
 const taskInput = document.getElementById('taskInput');
 const taskDate = document.getElementById('taskDate');
 const calendarBtn = document.getElementById('calendarBtn');
@@ -20,13 +19,11 @@ const themeToggle = document.getElementById('themeToggle');
 const prioritySelector = document.getElementById('prioritySelector');
 const priorityBtns = document.querySelectorAll('.priority-btn');
 
-// Modal Elements
 const confirmModal = document.getElementById('customConfirmModal');
 const confirmModalText = document.getElementById('confirmModalText');
 const confirmBtn = document.getElementById('confirmBtn');
 const cancelBtn = document.getElementById('cancelBtn');
 
-// App State
 let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
 let currentFilter = 'all';
 let currentSort = 'date-created';
@@ -37,9 +34,7 @@ let months = [
     'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-// Initialize the app
 function initApp() {
-    // Theme setup
     const savedTheme = localStorage.getItem('theme') || 'light';
     if (savedTheme === 'dark') {
         document.body.classList.add('dark-theme');
@@ -50,13 +45,11 @@ function initApp() {
     updateTaskCount();
     updateCalendar();
     
-    // Event listeners
     addTaskBtn.addEventListener('click', addTask);
     taskInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') addTask();
     });
     
-    // Calendar event listeners
     calendarBtn.addEventListener('click', () => toggleCalendar());
     prevMonthBtn.addEventListener('click', () => previousMonth());
     nextMonthBtn.addEventListener('click', () => nextMonth());
@@ -64,14 +57,12 @@ function initApp() {
     todayBtn.addEventListener('click', () => selectToday());
     okBtn.addEventListener('click', () => confirmDate());
     
-    // Close calendar when clicking outside
     document.addEventListener('click', (e) => {
         if (!calendarDropdown.contains(e.target) && !calendarBtn.contains(e.target) && !taskDate.contains(e.target)) {
             closeCalendar();
         }
     });
 
-    // Prevent calendar from closing when clicking inside
     calendarDropdown.addEventListener('click', (e) => {
         e.stopPropagation();
     });
@@ -94,7 +85,6 @@ function initApp() {
     themeToggle.addEventListener('change', toggleTheme);
 }
 
-// Calendar functions
 function toggleCalendar() {
     calendarDropdown.classList.toggle('active');
     if (calendarDropdown.classList.contains('active')) {
@@ -153,7 +143,6 @@ function updateCalendar() {
     
     let daysHTML = '';
     
-    // Previous month's days
     const prevMonth = new Date(year, month, 0);
     const daysInPrevMonth = prevMonth.getDate();
     
@@ -162,7 +151,6 @@ function updateCalendar() {
         daysHTML += `<div class="day other-month" data-date="${prevMonth.getFullYear()}-${(prevMonth.getMonth() + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}">${day}</div>`;
     }
     
-    // Current month's days
     const today = new Date();
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day);
@@ -179,7 +167,6 @@ function updateCalendar() {
         daysHTML += `<div class="${classes}" data-date="${dateString}">${day}</div>`;
     }
     
-    // Next month's days
     const totalCells = Math.ceil((firstDayWeek + daysInMonth) / 7) * 7;
     const remainingCells = totalCells - (firstDayWeek + daysInMonth);
     const nextMonth = new Date(year, month + 1, 1);
@@ -191,7 +178,6 @@ function updateCalendar() {
     
     calendarDays.innerHTML = daysHTML;
     
-    // Add click events to days
     calendarDays.querySelectorAll('.day').forEach(day => {
         day.addEventListener('click', () => {
             const date = day.getAttribute('data-date');
@@ -201,12 +187,10 @@ function updateCalendar() {
 }
 
 function selectDate(dateString) {
-    // Remove previous selection
     calendarDays.querySelectorAll('.day.selected').forEach(day => {
         day.classList.remove('selected');
     });
     
-    // Add selection to clicked day
     const selectedDay = calendarDays.querySelector(`[data-date="${dateString}"]`);
     if (selectedDay) {
         selectedDay.classList.add('selected');
@@ -246,7 +230,6 @@ function isSameDay(date1, date2) {
            date1.getFullYear() === date2.getFullYear();
 }
 
-// Add a new task
 function addTask() {
     const text = taskInput.value.trim();
     const date = taskDate.value;
@@ -271,7 +254,6 @@ function addTask() {
     renderTasks();
     updateTaskCount();
     
-    // Reset input fields
     taskInput.value = '';
     taskDate.value = '';
     selectedDate = null;
@@ -281,24 +263,20 @@ function addTask() {
     taskInput.focus();
 }
 
-// Render tasks based on current filter, search, and sort
 function renderTasks() {
     taskList.innerHTML = '';
     
-    // 1. Filter by status
     let filteredTasks = tasks.filter(task => {
         if (currentFilter === 'active') return !task.completed;
         if (currentFilter === 'completed') return task.completed;
         return true;
     });
 
-    // 2. Filter by search term
     const searchTerm = searchInput.value.toLowerCase();
     if (searchTerm) {
         filteredTasks = filteredTasks.filter(task => task.text.toLowerCase().includes(searchTerm));
     }
 
-    // 3. Sort tasks
     const priorityValues = { high: 3, medium: 2, low: 1 };
     filteredTasks.sort((a, b) => {
         switch (currentSort) {
@@ -335,7 +313,6 @@ function displayEmptyState() {
     `;
 }
 
-// Create task element
 function createTaskElement(task) {
     const li = document.createElement('li');
     const isOverdue = task.date && !task.completed && new Date(convertToISODate(task.date)) < new Date();
@@ -375,10 +352,8 @@ function createTaskElement(task) {
 function convertToISODate(dateString) {
     if (!dateString) return null;
     
-    // If it's already in ISO format, return it
     if (dateString.includes('T')) return dateString;
     
-    // Convert dd-mm-yyyy to yyyy-mm-dd
     const parts = dateString.split('-');
     if (parts.length === 3) {
         return `${parts[2]}-${parts[1]}-${parts[0]}`;
@@ -390,7 +365,6 @@ function convertToISODate(dateString) {
 function formatDueDate(dateString) {
     if (!dateString) return 'No due date';
     
-    // Convert dd-mm-yyyy format to proper date
     const parts = dateString.split('-');
     if (parts.length === 3) {
         const date = new Date(parts[2], parts[1] - 1, parts[0]);
@@ -405,7 +379,6 @@ function formatDueDate(dateString) {
     return dateString;
 }
 
-// Toggle task completion status
 function toggleTaskComplete(id) {
     tasks = tasks.map(task => 
         task.id === id ? {...task, completed: !task.completed} : task
@@ -415,7 +388,6 @@ function toggleTaskComplete(id) {
     updateTaskCount();
 }
 
-// Delete a task
 function deleteTask(id, text) {
     showConfirmationModal(`Are you sure you want to delete the task "${text}"?`, () => {
         tasks = tasks.filter(task => task.id !== id);
@@ -425,7 +397,6 @@ function deleteTask(id, text) {
     });
 }
 
-// Edit a task
 function editTask(id) {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
@@ -459,7 +430,6 @@ function editTask(id) {
         </div>
     `;
     
-    // Priority selection logic
     const priorityOptions = taskElement.querySelectorAll('.priority-option');
     priorityOptions.forEach(option => {
         option.addEventListener('click', () => {
@@ -493,19 +463,16 @@ function editTask(id) {
     });
 }
 
-// Update task count
 function updateTaskCount() {
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter(task => task.completed).length;
     taskCount.textContent = `${completedTasks} of ${totalTasks} tasks`;
 }
 
-// Save tasks to localStorage
 function saveTasks() {
     localStorage.setItem('tasks', JSON.stringify(tasks));
 }
 
-// Theme switcher logic
 function toggleTheme() {
     if (themeToggle.checked) {
         document.body.classList.add('dark-theme');
@@ -516,7 +483,6 @@ function toggleTheme() {
     }
 }
 
-// Custom confirmation modal logic
 function showConfirmationModal(message, callback) {
     confirmModalText.textContent = message;
     confirmModal.style.display = 'flex';
@@ -540,5 +506,4 @@ function showConfirmationModal(message, callback) {
     cancelBtn.addEventListener('click', cancelHandler);
 }
 
-// Initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', initApp);
